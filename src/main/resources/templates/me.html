@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSO Demo - Profile</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+        .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 1rem 1.25rem; max-width: 1000px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        th, td { border: 1px solid #e5e7eb; text-align: left; vertical-align: top; padding: 0.5rem; }
+        th { width: 240px; background: #f9fafb; }
+        .links a { margin-right: 1rem; }
+        code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Profile Route (/me)</h1>
+    <p><strong>Authenticated:</strong> <span th:text="${authenticated}">true</span></p>
+
+    <div class="links">
+        <a th:href="${home}">Back to home</a>
+        <a th:href="${logout}">Logout</a>
+    </div>
+
+    <table>
+        <tr><th>Name</th><td th:text="${name}">-</td></tr>
+        <tr><th>Preferred Username</th><td th:text="${preferredUsername}">-</td></tr>
+        <tr><th>Email</th><td th:text="${email}">-</td></tr>
+        <tr><th>Subject</th><td><code th:text="${subject}">-</code></td></tr>
+        <tr><th>Issuer</th><td><code th:text="${issuer}">-</code></td></tr>
+        <tr><th>Principal (fallback)</th><td th:text="${principal}">-</td></tr>
+        <tr><th>Authorities (fallback)</th><td><code th:text="${authorities}">-</code></td></tr>
+    </table>
+
+    <h2>OIDC Claims</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Claim</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${claims == null or #maps.isEmpty(claims)}">
+            <td colspan="2">No claims available</td>
+        </tr>
+        <tr th:each="entry : ${claims}">
+            <td th:text="${entry.key}">claim</td>
+            <td><code th:text="${entry.value}">value</code></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+

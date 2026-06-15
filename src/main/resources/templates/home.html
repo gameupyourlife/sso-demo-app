@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSO Demo - Home</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+        .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 1rem 1.25rem; max-width: 900px; }
+        .links a { margin-right: 1rem; }
+        code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Spring Boot SSO Demo</h1>
+    <p th:text="${message}">Login happens against Keycloak, and Keycloak can federate to Microsoft Entra ID.</p>
+
+    <p><strong>App:</strong> <span th:text="${app}">sso-demo-app</span></p>
+    <p><strong>Server time:</strong> <span th:text="${now}">-</span></p>
+    <p><strong>Authenticated:</strong> <span th:text="${authenticated}">false</span></p>
+
+    <div class="links">
+        <a th:if="${!authenticated}" th:href="${login}">Login with Microsoft (via Keycloak)</a>
+        <a th:if="${authenticated}" th:href="${profile}">Go to profile route (/me)</a>
+        <a th:if="${authenticated}" th:href="${logout}">Logout</a>
+    </div>
+
+    <hr>
+    <p>This app authenticates against <code>Keycloak</code> only. In Keycloak, configure an Entra ID identity provider and optionally set it as default.</p>
+</div>
+</body>
+</html>
+
