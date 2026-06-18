@@ -3,6 +3,7 @@ package com.example.ssodemo.web;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,7 +23,8 @@ class DemoControllerSecurityTest {
     @Test
     void homeIsPublic() throws Exception {
         mockMvc.perform(get("/"))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Spring Boot SSO Demo")));
     }
 
     @Test
@@ -36,7 +38,8 @@ class DemoControllerSecurityTest {
     void meIsAvailableForAuthenticatedUser() throws Exception {
         mockMvc.perform(get("/me").with(oidcLogin()))
             .andExpect(status().isOk())
-            .andExpect(authenticated());
+            .andExpect(authenticated())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Profile Route (/me)")));
     }
 }
 

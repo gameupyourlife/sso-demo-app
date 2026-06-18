@@ -17,6 +17,8 @@ spring:
               - openid
               - profile
               - email
+            claims:
+              - idtyp
         provider:
           keycloak:
             issuer-uri: ${KEYCLOAK_ISSUER_URI:https://keycloak-g9f2wog7auaqyvwqq9ti99gf.komoda.app/realms/sso-demo}
@@ -25,3 +27,13 @@ spring:
             jwk-set-uri: ${KEYCLOAK_JWK_URI:https://keycloak-g9f2wog7auaqyvwqq9ti99gf.komoda.app/realms/sso-demo/protocol/openid-connect/certs}
             user-info-uri: ${KEYCLOAK_USERINFO_URI:https://keycloak-g9f2wog7auaqyvwqq9ti99gf.komoda.app/realms/sso-demo/protocol/openid-connect/userinfo}
             user-name-attribute: preferred_username
+
+app:
+  login:
+    prompt: ${LOGIN_PROMPT:select_account}
+  sensitive-data:
+    compliance-claim: ${COMPLIANCE_CLAIM:device_compliant}
+    compliant-values: ${COMPLIANCE_VALUES:true,1,yes,compliant}
+    fail-open-when-claim-missing: ${COMPLIANCE_FAIL_OPEN:false}
+    debug-force-compliant: ${COMPLIANCE_DEBUG_FORCE:}
+

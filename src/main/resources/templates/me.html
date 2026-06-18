@@ -12,6 +12,9 @@
         th { width: 240px; background: #f9fafb; }
         .links a { margin-right: 1rem; }
         code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 4px; }
+        .notice { margin-top: 1rem; padding: 0.75rem; border-radius: 6px; }
+        .ok { background: #ecfdf5; border: 1px solid #34d399; }
+        .warn { background: #fffbeb; border: 1px solid #f59e0b; }
     </style>
 </head>
 <body>
@@ -24,35 +27,111 @@
         <a th:href="${logout}">Logout</a>
     </div>
 
+    <div class="notice warn" th:if="${debugCompliantOverrideEnabled}">
+        Debug override is active. Compliance gate is forced to
+        <code th:text="${debugCompliantOverrideValue}">false</code>.
+    </div>
+
+    <div class="notice ok" th:if="${sensitiveDataVisible}">
+        Device/session is compliant. Sensitive profile data is visible.
+    </div>
+    <div class="notice warn" th:unless="${sensitiveDataVisible}">
+        Device/session is not compliant. Sensitive data is hidden, but sign-in stays allowed.
+        <br>
+        Checked claim: <code th:text="${complianceClaimName}">device_compliant</code>,
+        value: <code th:text="${complianceClaimValue}">null</code>
+    </div>
+
     <table>
         <tr><th>Name</th><td th:text="${name}">-</td></tr>
         <tr><th>Preferred Username</th><td th:text="${preferredUsername}">-</td></tr>
-        <tr><th>Email</th><td th:text="${email}">-</td></tr>
-        <tr><th>Subject</th><td><code th:text="${subject}">-</code></td></tr>
         <tr><th>Issuer</th><td><code th:text="${issuer}">-</code></td></tr>
+        <tr><th>Compliant</th><td th:text="${deviceCompliant}">false</td></tr>
+        <tr th:if="${sensitiveDataVisible}"><th>Email</th><td th:text="${email}">-</td></tr>
+        <tr th:if="${sensitiveDataVisible}"><th>Subject</th><td><code th:text="${subject}">-</code></td></tr>
+        <tr th:if="${sensitiveDataVisible}"><th>Access token present</th><td th:text="${accessTokenPresent}">false</td></tr>
+        <tr th:if="${sensitiveDataVisible}"><th>Refresh token present</th><td th:text="${refreshTokenPresent}">false</td></tr>
         <tr><th>Principal (fallback)</th><td th:text="${principal}">-</td></tr>
         <tr><th>Authorities (fallback)</th><td><code th:text="${authorities}">-</code></td></tr>
     </table>
 
-    <h2>OIDC Claims</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>Claim</th>
-            <th>Value</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:if="${claims == null or #maps.isEmpty(claims)}">
-            <td colspan="2">No claims available</td>
-        </tr>
-        <tr th:each="entry : ${claims}">
-            <td th:text="${entry.key}">claim</td>
-            <td><code th:text="${entry.value}">value</code></td>
-        </tr>
-        </tbody>
-    </table>
+    <div th:if="${sensitiveDataVisible}">
+        <h2>Merged OIDC Claims</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Claim</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${claims == null or #maps.isEmpty(claims)}">
+                <td colspan="2">No claims available</td>
+            </tr>
+            <tr th:each="entry : ${claims}">
+                <td th:text="${entry.key}">claim</td>
+                <td><code th:text="${entry.value}">value</code></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2>ID Token Claims</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Claim</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${idTokenClaims == null or #maps.isEmpty(idTokenClaims)}">
+                <td colspan="2">No ID token claims available</td>
+            </tr>
+            <tr th:each="entry : ${idTokenClaims}">
+                <td th:text="${entry.key}">claim</td>
+                <td><code th:text="${entry.value}">value</code></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2>UserInfo Claims</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Claim</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${userInfoClaims == null or #maps.isEmpty(userInfoClaims)}">
+                <td colspan="2">No UserInfo claims available</td>
+            </tr>
+            <tr th:each="entry : ${userInfoClaims}">
+                <td th:text="${entry.key}">claim</td>
+                <td><code th:text="${entry.value}">value</code></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2>Access Token Claims</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Claim</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${accessTokenClaims == null or #maps.isEmpty(accessTokenClaims)}">
+                <td colspan="2">No access token claims available</td>
+            </tr>
+            <tr th:each="entry : ${accessTokenClaims}">
+                <td th:text="${entry.key}">claim</td>
+                <td><code th:text="${entry.value}">value</code></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 </body>
 </html>
-

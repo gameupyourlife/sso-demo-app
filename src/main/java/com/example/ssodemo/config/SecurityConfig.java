@@ -2,9 +2,9 @@ package com.example.ssodemo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.web.SecurityFilterChain;
@@ -15,8 +15,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   OAuth2AuthorizationRequestResolver authorizationRequestResolver,
-                                                   LogoutSuccessHandler logoutSuccessHandler) throws Exception {
+                                                   LogoutSuccessHandler logoutSuccessHandler,
+                                                   OAuth2AuthorizationRequestResolver authorizationRequestResolver) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/error").permitAll()
@@ -32,15 +32,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public OAuth2AuthorizationRequestResolver authorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
-        DefaultOAuth2AuthorizationRequestResolver resolver =
-            new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
-        // Always show account chooser so testers can switch Entra users easily.
-        resolver.setAuthorizationRequestCustomizer(customizer -> customizer
-            .additionalParameters(params -> params.put("prompt", "select_account")));
-        return resolver;
-    }
 
     @Bean
     public LogoutSuccessHandler logoutSuccessHandler(ClientRegistrationRepository clientRegistrationRepository) {
@@ -48,5 +39,17 @@ public class SecurityConfig {
             new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
         handler.setPostLogoutRedirectUri("{baseUrl}/");
         return handler;
+    }
+
+    @Bean
+    public OAuth2AuthorizationRequestResolver authorizationRequestResolver(
+        ClientRegistrationRepository clientRegistrationRepository,
+        @Value("${app.login.prompt:select_account}") String promptValue
+    ) {
+        return new PromptAuthorizationRequestResolver(
+            clientRegistrationRepository,
+            "/oauth2/authorization",
+            promptValue
+        );
     }
 }
