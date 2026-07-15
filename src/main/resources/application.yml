@@ -10,15 +10,30 @@ spring:
           keycloak:
             provider: keycloak
             client-id: ${KEYCLOAK_CLIENT_ID:sso-demo-app}
-            client-secret: ${KEYCLOAK_CLIENT_SECRET:L4sNRCgMwl2BTjMvqFtmugxxNlDLoPPA}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:}
             authorization-grant-type: authorization_code
             redirect-uri: ${APP_REDIRECT_URI:https://placentate-forebodingly-charlotte.ngrok-free.dev/login/oauth2/code/{registrationId}}
             scope:
               - openid
               - profile
               - email
+              - ipaddr
+              - upn
+              - deviceid
             claims:
               - idtyp
+          entra:
+            provider: entra
+            client-id: ${ENTRA_CLIENT_ID:3d2957fb-565a-45e7-ad44-d74862fa4993}
+            client-secret: ${ENTRA_CLIENT_SECRET:}
+            authorization-grant-type: authorization_code
+            redirect-uri: ${APP_REDIRECT_URI:https://placentate-forebodingly-charlotte.ngrok-free.dev/login/oauth2/code/{registrationId}}
+            scope:
+              - openid
+              - profile
+              - email
+              - User.Read
+              - AuditLog.Read.All
         provider:
           keycloak:
             issuer-uri: ${KEYCLOAK_ISSUER_URI:https://keycloak-g9f2wog7auaqyvwqq9ti99gf.komoda.app/realms/sso-demo}
@@ -27,10 +42,26 @@ spring:
             jwk-set-uri: ${KEYCLOAK_JWK_URI:https://keycloak-g9f2wog7auaqyvwqq9ti99gf.komoda.app/realms/sso-demo/protocol/openid-connect/certs}
             user-info-uri: ${KEYCLOAK_USERINFO_URI:https://keycloak-g9f2wog7auaqyvwqq9ti99gf.komoda.app/realms/sso-demo/protocol/openid-connect/userinfo}
             user-name-attribute: preferred_username
+          entra:
+            authorization-uri: ${ENTRA_AUTH_URI:https://login.microsoftonline.com/${ENTRA_TENANT_ID:06531b61-a03e-4873-848d-679040a6369b}/oauth2/v2.0/authorize}
+            token-uri: ${ENTRA_TOKEN_URI:https://login.microsoftonline.com/${ENTRA_TENANT_ID:06531b61-a03e-4873-848d-679040a6369b}/oauth2/v2.0/token}
+            jwk-set-uri: ${ENTRA_JWK_URI:https://login.microsoftonline.com/${ENTRA_TENANT_ID:06531b61-a03e-4873-848d-679040a6369b}/discovery/v2.0/keys}
+            user-info-uri: ${ENTRA_USERINFO_URI:https://graph.microsoft.com/oidc/userinfo}
+            user-name-attribute: sub
+
+    saml2:
+      relyingparty:
+        registration:
+          entra-saml:
+            assertingparty:
+              metadata-uri: ${ENTRA_SAML_METADATA_URI:https://login.microsoftonline.com/${ENTRA_TENANT_ID:06531b61-a03e-4873-848d-679040a6369b}/federationmetadata/2007-06/federationmetadata.xml?appid=${ENTRA_SAML_APP_ID:${ENTRA_CLIENT_ID:3d2957fb-565a-45e7-ad44-d74862fa4993}}}
 
 app:
   login:
+    default-registration: ${LOGIN_DEFAULT_REGISTRATION:keycloak}
     prompt: ${LOGIN_PROMPT:select_account}
+  graph:
+    devices-endpoint: ${GRAPH_DEVICES_ENDPOINT:https://graph.microsoft.com/v1.0/me/ownedDevices?$select=id,deviceId,displayName,operatingSystem,operatingSystemVersion,trustType,isCompliant,isManaged}
   sensitive-data:
     compliance-claim: ${COMPLIANCE_CLAIM:device_compliant}
     compliant-values: ${COMPLIANCE_VALUES:true,1,yes,compliant}

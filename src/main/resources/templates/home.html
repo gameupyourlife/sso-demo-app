@@ -21,13 +21,19 @@
     <p><strong>Authenticated:</strong> <span th:text="${authenticated}">false</span></p>
 
     <div class="links">
-        <a th:if="${!authenticated}" th:href="${login}">Login with Microsoft (via Keycloak)</a>
+        <a th:if="${!authenticated}" th:href="${login}">Login (default)</a>
+        <a th:if="${!authenticated}" th:href="${loginKeycloak}">Login via Keycloak</a>
+        <a th:if="${!authenticated}" th:href="${loginEntra}">Login directly with Entra ID</a>
+        <a th:if="${!authenticated}" th:href="${loginEntraSaml}">Login with Entra SAML</a>
+        <a th:href="${samlMetadata}">SAML SP metadata</a>
         <a th:if="${authenticated}" th:href="${profile}">Go to profile route (/me)</a>
+        <a th:if="${authenticated}" th:href="${devices}">Go to devices route (/device)</a>
+        <a th:if="${authenticated}" th:href="${saml}">Go to SAML route (/saml)</a>
         <a th:if="${authenticated}" th:href="${logout}">Logout</a>
     </div>
 
     <hr>
-    <p>This app authenticates against <code>Keycloak</code> only. In Keycloak, configure an Entra ID identity provider and optionally set it as default.</p>
+    <p>This app supports both <code>Keycloak</code> federation and direct <code>Microsoft Entra ID</code> sign-in.</p>
 </div>
 </body>
 </html>

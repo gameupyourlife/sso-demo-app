@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSO Demo - SAML Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+        .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 1rem 1.25rem; max-width: 1100px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        th, td { border: 1px solid #e5e7eb; text-align: left; vertical-align: top; padding: 0.5rem; }
+        th { background: #f9fafb; }
+        .links a { margin-right: 1rem; }
+        code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 4px; }
+        .notice { margin-top: 1rem; padding: 0.75rem; border-radius: 6px; }
+        .ok { background: #ecfdf5; border: 1px solid #34d399; }
+        .warn { background: #fffbeb; border: 1px solid #f59e0b; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>SAML Route (/saml)</h1>
+    <p><strong>Authenticated:</strong> <span th:text="${authenticated}">true</span></p>
+
+    <div class="links">
+        <a th:href="${home}">Back to home</a>
+        <a th:href="${profile}">Go to profile</a>
+        <a th:href="${devices}">Go to devices</a>
+        <a th:href="${samlMetadata}">SAML SP metadata</a>
+        <a th:href="${logout}">Logout</a>
+    </div>
+
+    <div class="notice ok" th:if="${isSamlAuthentication}">
+        Active SAML authentication is present.
+    </div>
+    <div class="notice warn" th:unless="${isSamlAuthentication}">
+        Current session is not SAML-authenticated. Use "Login with Entra SAML" from home.
+    </div>
+
+    <div class="notice warn" th:if="${samlError != null}">
+        <strong>SAML login error:</strong>
+        <span th:text="${samlError}">Signature validation failed</span>
+    </div>
+
+    <table>
+        <tr><th>SAML Principal Name (NameID)</th><td th:text="${samlName}">-</td></tr>
+        <tr><th>Relying Party Registration</th><td><code th:text="${samlRegistrationId}">entra-saml</code></td></tr>
+        <tr><th>SAML Response Present</th><td th:text="${samlResponsePresent}">false</td></tr>
+        <tr><th>Session Indexes</th><td><code th:text="${samlSessionIndexes}">[]</code></td></tr>
+    </table>
+
+    <h2>Authorities / Rights</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Authority</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(samlAuthorities)}">
+            <td>No authorities available</td>
+        </tr>
+        <tr th:each="authority : ${samlAuthorities}">
+            <td><code th:text="${authority}">ROLE_USER</code></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>SAML Attributes / Claims</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Attribute</th>
+            <th>Values</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${samlAttributes == null or #maps.isEmpty(samlAttributes)}">
+            <td colspan="2">No SAML attributes available</td>
+        </tr>
+        <tr th:each="entry : ${samlAttributes}">
+            <td th:text="${entry.key}">http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name</td>
+            <td><code th:text="${entry.value}">[value]</code></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+

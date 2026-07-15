@@ -35,11 +35,70 @@ class DemoControllerSecurityTest {
     }
 
     @Test
+    void deviceRedirectsToOauthLoginWhenAnonymous() throws Exception {
+        mockMvc.perform(get("/device"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(header().string("Location", "http://localhost/oauth2/authorization/keycloak"));
+    }
+
+    @Test
     void meIsAvailableForAuthenticatedUser() throws Exception {
         mockMvc.perform(get("/me").with(oidcLogin()))
             .andExpect(status().isOk())
             .andExpect(authenticated())
             .andExpect(content().string(org.hamcrest.Matchers.containsString("Profile Route (/me)")));
+    }
+
+    @Test
+    void oauthAuthorizationRedirectIncludesSelectAccountPrompt() throws Exception {
+        mockMvc.perform(get("/oauth2/authorization/keycloak"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("prompt=select_account")));
+    }
+
+    @Test
+    void directEntraAuthorizationEndpointIsAvailable() throws Exception {
+        mockMvc.perform(get("/oauth2/authorization/entra"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("login.microsoftonline.com")))
+            .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("prompt=select_account")));
+    }
+
+    @Test
+    void entraSamlAuthenticationEndpointIsAvailable() throws Exception {
+        mockMvc.perform(get("/saml2/authenticate/entra-saml"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("login.microsoftonline.com")))
+            .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("SAMLRequest=")));
+    }
+
+    @Test
+    void deviceRouteIsAvailableForAuthenticatedUser() throws Exception {
+        mockMvc.perform(get("/device").with(oidcLogin()))
+            .andExpect(status().isOk())
+            .andExpect(authenticated())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Devices Route (/device)")));
+    }
+
+    @Test
+    void samlRouteIsAvailableForAuthenticatedUser() throws Exception {
+        mockMvc.perform(get("/saml").with(oidcLogin()))
+            .andExpect(status().isOk())
+            .andExpect(authenticated())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("SAML Route (/saml)")));
+    }
+
+    @Test
+    void samlMetadataEndpointIsAvailable() throws Exception {
+        mockMvc.perform(get("/saml2/service-provider-metadata/entra-saml"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("EntityDescriptor")));
+    }
+
+    @Test
+    void logoutWorksWithGetLink() throws Exception {
+        mockMvc.perform(get("/logout").with(oidcLogin()))
+            .andExpect(status().is3xxRedirection());
     }
 }
 

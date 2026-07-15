@@ -1,12 +1,17 @@
 # sso-demo-app
 
-Small Spring Boot demo app to test **SSO via Keycloak**, where Keycloak federates authentication to **Microsoft Entra ID**.
+Small Spring Boot demo app to test **SSO via Keycloak** (federated to Microsoft Entra ID), **directly via Microsoft Entra ID (OIDC)**, or **Microsoft Entra ID via SAML**.
 
 ## Architecture
 
-`Browser -> Spring Boot app -> Keycloak -> Microsoft Entra ID`
+`Browser -> Spring Boot app -> (Keycloak -> Microsoft Entra ID) or (Microsoft Entra ID direct OIDC) or (Microsoft Entra ID SAML)`
 
-The app is only configured as an OAuth2 client of Keycloak. Federation to Microsoft Entra ID is configured in Keycloak.
+The app supports two OAuth2 client registrations:
+- `keycloak` (federated path)
+- `entra` (direct path)
+
+And one SAML relying-party registration:
+- `entra-saml` (direct SAML path)
 
 ## 1) Start Keycloak (local demo)
 
@@ -59,14 +64,61 @@ mvn spring-boot:run
 
 App runs on `http://localhost:8081`.
 
+### Local env file
+
+Secrets and deployment-specific values are no longer stored in `src/main/resources/application.yml`.
+
+Copy the provided template and fill in the real values:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then edit `.env` and set your real client secrets, issuer URLs, and tenant values.
+
+## 4a) Deploy on Coolify (existing Keycloak, no local Keycloak container)
+
+This repository now contains a production-ready `Dockerfile` for the Spring Boot app only.
+
+In Coolify:
+
+1. Create a new app from this Git repository.
+2. Use the `Dockerfile` in the repository root.
+3. Expose port `8081`.
+4. Set the environment variables from `.env.example` for your **existing** Keycloak instance.
+
+Minimum Keycloak-related variables for a browser login flow:
+
+```powershell
+$env:APP_PORT="8081"
+$env:APP_REDIRECT_URI="https://your-domain.example/login/oauth2/code/{registrationId}"
+$env:KEYCLOAK_CLIENT_ID="sso-demo-app"
+$env:KEYCLOAK_CLIENT_SECRET="your-client-secret"
+$env:KEYCLOAK_ISSUER_URI="https://keycloak.example.com/realms/sso-demo"
+$env:KEYCLOAK_AUTH_URI="https://keycloak.example.com/realms/sso-demo/protocol/openid-connect/auth"
+$env:KEYCLOAK_TOKEN_URI="https://keycloak.example.com/realms/sso-demo/protocol/openid-connect/token"
+$env:KEYCLOAK_JWK_URI="https://keycloak.example.com/realms/sso-demo/protocol/openid-connect/certs"
+$env:KEYCLOAK_USERINFO_URI="https://keycloak.example.com/realms/sso-demo/protocol/openid-connect/userinfo"
+```
+
+If you prefer, you can copy the values from `.env.example` into Coolify's environment editor one by one.
+
+If you want direct Entra sign-in instead of Keycloak, set the `ENTRA_*` variables and `LOGIN_DEFAULT_REGISTRATION=entra`.
+
+You do **not** need to run the `docker-compose.yml` Keycloak service for this deployment.
+
 ## 5) Demo routes (with UI)
 
 - `GET /` public HTML page with login/profile links
 - `GET /me` protected HTML profile page with compliance-aware masking for sensitive fields
+- `GET /device` protected HTML page that calls Microsoft Graph to list user devices
+- `GET /saml` protected HTML page showing SAML attributes, rights (authorities), and session details
 
 To login directly:
 
 - `http://localhost:8081/oauth2/authorization/keycloak`
+- `http://localhost:8081/oauth2/authorization/entra`
+- `http://localhost:8081/saml2/authenticate/entra-saml`
 
 ## Configuration (env vars)
 
@@ -77,6 +129,17 @@ To login directly:
 - `KEYCLOAK_TOKEN_URI` (default local realm token endpoint)
 - `KEYCLOAK_JWK_URI` (default local realm certs endpoint)
 - `KEYCLOAK_USERINFO_URI` (default local realm userinfo endpoint)
+- `ENTRA_CLIENT_ID` (client ID for direct Entra app registration)
+- `ENTRA_CLIENT_SECRET` (client secret for direct Entra app registration)
+- `ENTRA_TENANT_ID` (default `common`; use your tenant GUID for production)
+- `ENTRA_AUTH_URI` (optional override for authorize endpoint)
+- `ENTRA_TOKEN_URI` (optional override for token endpoint)
+- `ENTRA_JWK_URI` (optional override for JWKS endpoint)
+- `ENTRA_USERINFO_URI` (optional override for UserInfo endpoint)
+- `ENTRA_SAML_METADATA_URI` (default `https://login.microsoftonline.com/{tenant-id}/federationmetadata/2007-06/federationmetadata.xml`)
+- `ENTRA_SAML_APP_ID` (optional; used to resolve app-specific federation metadata)
+- `GRAPH_DEVICES_ENDPOINT` (default `https://graph.microsoft.com/v1.0/me/ownedDevices?...`)
+- `LOGIN_DEFAULT_REGISTRATION` (default `keycloak`; can be `entra`)
 - `LOGIN_PROMPT` (default `select_account`; keeps account picker enabled on Entra login)
 - `COMPLIANCE_CLAIM` (default `device_compliant`)
 - `COMPLIANCE_VALUES` (default `true,1,yes,compliant`)
@@ -100,6 +163,22 @@ Recommended setup:
 4. Keep `COMPLIANCE_FAIL_OPEN=false` to avoid exposing sensitive data when compliance claim is missing.
 
 To always allow user account selection when redirected to Entra ID, keep `LOGIN_PROMPT=select_account`.
+
+If you want direct Entra sign-in to be the default redirect target for protected pages, set `LOGIN_DEFAULT_REGISTRATION=entra`.
+
+For `/device`, direct Entra sign-in should include delegated `device.read` scope in the `entra` registration so Graph can return the signed-in user's devices.
+
+For SAML setup, open your service-provider metadata at:
+
+- `http://localhost:8081/saml2/service-provider-metadata/entra-saml`
+
+Use that metadata in Microsoft Entra Enterprise App SAML configuration.
+
+If metadata previously returned an error page, ensure SAML metadata is enabled in security configuration and that `ENTRA_SAML_METADATA_URI` is reachable from the app runtime.
+
+For signature validation issues (`Signature ... was not valid`), prefer metadata-based configuration and point `ENTRA_SAML_METADATA_URI` to your exact Entra federation metadata URL (tenant-specific, and app-specific variant if required by your tenant policy).
+
+Default config now uses the app-specific metadata pattern with `?appid=...`. If SAML login still fails, open `/saml` after a failed login and inspect the surfaced `SAML login error` message.
 
 ## Compliance-aware masking
 

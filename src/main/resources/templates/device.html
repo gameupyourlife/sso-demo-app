@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSO Demo - Devices</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+        .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 1rem 1.25rem; max-width: 1100px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        th, td { border: 1px solid #e5e7eb; text-align: left; vertical-align: top; padding: 0.5rem; }
+        th { background: #f9fafb; }
+        .links a { margin-right: 1rem; }
+        code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 4px; }
+        .notice { margin-top: 1rem; padding: 0.75rem; border-radius: 6px; }
+        .ok { background: #ecfdf5; border: 1px solid #34d399; }
+        .warn { background: #fffbeb; border: 1px solid #f59e0b; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Devices Route (/device)</h1>
+    <p><strong>Authenticated:</strong> <span th:text="${authenticated}">true</span></p>
+
+    <div class="links">
+        <a th:href="${home}">Back to home</a>
+        <a th:href="${profile}">Go to profile</a>
+        <a th:href="${saml}">Go to SAML</a>
+        <a th:href="${logout}">Logout</a>
+    </div>
+
+    <p>
+        Endpoint: <code th:text="${deviceEndpoint}">https://graph.microsoft.com/v1.0/me/ownedDevices</code><br>
+        Active client registration: <code th:text="${activeClientRegistration}">entra</code><br>
+        Graph access token source: <code th:text="${graphAccessTokenSource}">oauth2-client-token</code>
+    </p>
+
+    <div class="notice warn" th:if="${deviceError != null}">
+        <strong>Graph request failed:</strong>
+        <span th:text="${deviceError}">error</span>
+    </div>
+
+    <div class="notice ok" th:if="${deviceError == null}">
+        Graph request succeeded. Found <strong th:text="${deviceCount}">0</strong> device(s).
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Display Name</th>
+            <th>OS</th>
+            <th>Version</th>
+            <th>Managed</th>
+            <th>Compliant</th>
+            <th>Trust Type</th>
+            <th>Id</th>
+            <th>Device Id</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(devices)}">
+            <td colspan="7">No devices returned</td>
+        </tr>
+        <tr th:each="device : ${devices}">
+            <td th:text="${device['displayName']}">-</td>
+            <td th:text="${device['operatingSystem']}">-</td>
+            <td th:text="${device['operatingSystemVersion']}">-</td>
+            <td th:text="${device['isManaged']}">-</td>
+            <td th:text="${device['isCompliant']}">-</td>
+            <td th:text="${device['trustType']}">-</td>
+            <td><code th:text="${device['id']}">-</code></td>
+            <td><code th:text="${device['deviceId']}">-</code></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+

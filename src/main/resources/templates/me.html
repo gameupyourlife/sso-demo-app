@@ -24,6 +24,8 @@
 
     <div class="links">
         <a th:href="${home}">Back to home</a>
+        <a th:href="${devices}">Go to devices</a>
+        <a th:href="${saml}">Go to SAML</a>
         <a th:href="${logout}">Logout</a>
     </div>
 
@@ -47,6 +49,8 @@
         <tr><th>Preferred Username</th><td th:text="${preferredUsername}">-</td></tr>
         <tr><th>Issuer</th><td><code th:text="${issuer}">-</code></td></tr>
         <tr><th>Compliant</th><td th:text="${deviceCompliant}">false</td></tr>
+        <tr><th>Device ID Claim</th><td><code th:text="${deviceIdClaim}">-</code></td></tr>
+        <tr><th>Device details token source</th><td><code th:text="${deviceDetailsTokenSource}">-</code></td></tr>
         <tr th:if="${sensitiveDataVisible}"><th>Email</th><td th:text="${email}">-</td></tr>
         <tr th:if="${sensitiveDataVisible}"><th>Subject</th><td><code th:text="${subject}">-</code></td></tr>
         <tr th:if="${sensitiveDataVisible}"><th>Access token present</th><td th:text="${accessTokenPresent}">false</td></tr>
@@ -54,6 +58,35 @@
         <tr><th>Principal (fallback)</th><td th:text="${principal}">-</td></tr>
         <tr><th>Authorities (fallback)</th><td><code th:text="${authorities}">-</code></td></tr>
     </table>
+
+    <div class="notice warn" th:if="${deviceIdClaim != null and deviceDetailsError != null}">
+        Device lookup for claim <code th:text="${deviceIdClaim}">id</code> failed:
+        <span th:text="${deviceDetailsError}">error</span>
+    </div>
+    <div class="notice ok" th:if="${deviceDetailsFetched}">
+        Device lookup succeeded for claim <code th:text="${deviceIdClaim}">id</code>.
+    </div>
+
+    <div th:if="${deviceDetailsFetched}">
+        <h2>Resolved Device Details (Graph)</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${deviceDetails == null or #maps.isEmpty(deviceDetails)}">
+                <td colspan="2">No device details available</td>
+            </tr>
+            <tr th:each="entry : ${deviceDetails}">
+                <td th:text="${entry.key}">field</td>
+                <td><code th:text="${entry.value}">value</code></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div th:if="${sensitiveDataVisible}">
         <h2>Merged OIDC Claims</h2>
