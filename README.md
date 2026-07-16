@@ -64,18 +64,6 @@ mvn spring-boot:run
 
 App runs on `http://localhost:8081`.
 
-### Local env file
-
-Secrets and deployment-specific values are no longer stored in `src/main/resources/application.yml`.
-
-Copy the provided template and fill in the real values:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Then edit `.env` and set your real client secrets, issuer URLs, and tenant values.
-
 ## 4a) Deploy on Coolify (existing Keycloak, no local Keycloak container)
 
 This repository now contains a production-ready `Dockerfile` for the Spring Boot app only.
@@ -85,7 +73,7 @@ In Coolify:
 1. Create a new app from this Git repository.
 2. Use the `Dockerfile` in the repository root.
 3. Expose port `8081`.
-4. Set the environment variables from `.env.example` for your **existing** Keycloak instance.
+4. Set the environment variables for your **existing** Keycloak instance.
 
 Minimum Keycloak-related variables for a browser login flow:
 
@@ -101,7 +89,6 @@ $env:KEYCLOAK_JWK_URI="https://keycloak.example.com/realms/sso-demo/protocol/ope
 $env:KEYCLOAK_USERINFO_URI="https://keycloak.example.com/realms/sso-demo/protocol/openid-connect/userinfo"
 ```
 
-If you prefer, you can copy the values from `.env.example` into Coolify's environment editor one by one.
 
 If you want direct Entra sign-in instead of Keycloak, set the `ENTRA_*` variables and `LOGIN_DEFAULT_REGISTRATION=entra`.
 

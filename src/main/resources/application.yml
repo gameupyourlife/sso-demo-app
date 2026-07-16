@@ -17,9 +17,6 @@ spring:
               - openid
               - profile
               - email
-              - ipaddr
-              - upn
-              - deviceid
             claims:
               - idtyp
           entra:
@@ -58,7 +55,7 @@ spring:
 
 app:
   login:
-    default-registration: ${LOGIN_DEFAULT_REGISTRATION:keycloak}
+    default-registration: ${LOGIN_DEFAULT_REGISTRATION:entra}
     prompt: ${LOGIN_PROMPT:select_account}
   graph:
     devices-endpoint: ${GRAPH_DEVICES_ENDPOINT:https://graph.microsoft.com/v1.0/me/ownedDevices?$select=id,deviceId,displayName,operatingSystem,operatingSystemVersion,trustType,isCompliant,isManaged}

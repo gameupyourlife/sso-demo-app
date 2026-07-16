@@ -40,6 +40,9 @@ public class SecurityConfig {
                 .authorizationEndpoint(endpoint -> endpoint
                     .authorizationRequestResolver(authorizationRequestResolver)
                 )
+                .failureHandler((request, response, exception) -> {
+                    response.sendRedirect("/login?error=oauth2_failure");
+                })
             )
             .saml2Login(saml2 -> saml2
                 .failureHandler((request, response, exception) -> {
